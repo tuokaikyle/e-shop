@@ -1,35 +1,48 @@
-import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { Row, Col, ListGroup, Image, Form, Button, Card } from 'react-bootstrap'
-import Message from '../components/Message'
-import { addToCart, removeFromCart } from '../actions/cartActions'
+import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  Row,
+  Col,
+  ListGroup,
+  Image,
+  Form,
+  Button,
+  Card,
+} from 'react-bootstrap';
+import Message from '../components/Message';
+import { addToCart, removeFromCart } from '../actions/cartActions';
 
 const CartScreen = ({ match, location, history }) => {
-  const productId = match.params.id
+  // 此时不一定有id 比如直接去cart的时候
+  const productId = match.params.id;
+  // location.search 就是url后面的?qty=1。这句话就是获取url后面的数字
+  const qty = location.search ? Number(location.search.split('=')[1]) : 1;
 
-  const qty = location.search ? Number(location.search.split('=')[1]) : 1
+  const dispatch = useDispatch();
 
-  const dispatch = useDispatch()
-
-  const cart = useSelector((state) => state.cart)
-  const { cartItems } = cart
+  // 从state获取cartItems 这样就可以在下面使用
+  const cart = useSelector((state) => state.cart);
+  const { cartItems } = cart;
 
   useEffect(() => {
+    // 只有加入购物车时，才运行。普通的查看购物车，不运行。
     if (productId) {
-      dispatch(addToCart(productId, qty))
+      dispatch(addToCart(productId, qty));
     }
-  }, [dispatch, productId, qty])
+  }, [dispatch, productId, qty]);
 
   const removeFromCartHandler = (id) => {
-    dispatch(removeFromCart(id))
-  }
+    dispatch(removeFromCart(id));
+  };
 
+  // 在购物车界面 点击了这个 如果此时没登录就去login界面
   const checkoutHandler = () => {
-    history.push('/login?redirect=shipping')
-  }
+    history.push('/login?redirect=shipping');
+  };
 
   return (
+    // 84
     <Row>
       <Col md={8}>
         <h1>Shopping Cart</h1>
@@ -54,11 +67,13 @@ const CartScreen = ({ match, location, history }) => {
                       as='select'
                       value={item.qty}
                       onChange={(e) =>
+                        // 根据括号里面action的结果，更新状态
                         dispatch(
                           addToCart(item.product, Number(e.target.value))
                         )
                       }
                     >
+                      {/* 根据库存剩余 显示购买数量 */}
                       {[...Array(item.countInStock).keys()].map((x) => (
                         <option key={x + 1} value={x + 1}>
                           {x + 1}
@@ -67,6 +82,7 @@ const CartScreen = ({ match, location, history }) => {
                     </Form.Control>
                   </Col>
                   <Col md={2}>
+                    {/* 删除商品icon */}
                     <Button
                       type='button'
                       variant='light'
@@ -86,15 +102,17 @@ const CartScreen = ({ match, location, history }) => {
           <ListGroup variant='flush'>
             <ListGroup.Item>
               <h2>
+                {/* 这里是商品件数 不是类别数. accumulater初始为0, 累加item.qty,  */}
                 Subtotal ({cartItems.reduce((acc, item) => acc + item.qty, 0)})
                 items
               </h2>
-              $
+              {/* 总价格 2位小数 */}$
               {cartItems
                 .reduce((acc, item) => acc + item.qty * item.price, 0)
                 .toFixed(2)}
             </ListGroup.Item>
             <ListGroup.Item>
+              {/* 结算按钮 */}
               <Button
                 type='button'
                 className='btn-block'
@@ -108,7 +126,7 @@ const CartScreen = ({ match, location, history }) => {
         </Card>
       </Col>
     </Row>
-  )
-}
+  );
+};
 
-export default CartScreen
+export default CartScreen;

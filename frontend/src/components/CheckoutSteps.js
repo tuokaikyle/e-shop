@@ -1,7 +1,8 @@
-import React from 'react'
-import { Nav } from 'react-bootstrap'
-import { LinkContainer } from 'react-router-bootstrap'
+import React from 'react';
+import { Nav } from 'react-bootstrap';
+import { LinkContainer } from 'react-router-bootstrap';
 
+// 在第几步 就显示冒号前面的
 const CheckoutSteps = ({ step1, step2, step3, step4 }) => {
   return (
     <Nav className='justify-content-center mb-4'>
@@ -45,7 +46,7 @@ const CheckoutSteps = ({ step1, step2, step3, step4 }) => {
         )}
       </Nav.Item>
     </Nav>
-  )
-}
+  );
+};
 
-export default CheckoutSteps
+export default CheckoutSteps;

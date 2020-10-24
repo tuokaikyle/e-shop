@@ -1,99 +1,112 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { PayPalButton } from 'react-paypal-button-v2'
-import { Link } from 'react-router-dom'
-import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap'
-import { useDispatch, useSelector } from 'react-redux'
-import Message from '../components/Message'
-import Loader from '../components/Loader'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { PayPalButton } from 'react-paypal-button-v2';
+import { Link } from 'react-router-dom';
+import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import Message from '../components/Message';
+import Loader from '../components/Loader';
 import {
   getOrderDetails,
   payOrder,
   deliverOrder,
-} from '../actions/orderActions'
+} from '../actions/orderActions';
 import {
   ORDER_PAY_RESET,
   ORDER_DELIVER_RESET,
-} from '../constants/orderConstants'
+} from '../constants/orderConstants';
 
 const OrderScreen = ({ match, history }) => {
-  const orderId = match.params.id
+  const orderId = match.params.id;
 
-  const [sdkReady, setSdkReady] = useState(false)
+  const [sdkReady, setSdkReady] = useState(false);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const orderDetails = useSelector((state) => state.orderDetails)
-  const { order, loading, error } = orderDetails
+  const orderDetails = useSelector((state) => state.orderDetails);
+  const { order, loading, error } = orderDetails;
 
-  const orderPay = useSelector((state) => state.orderPay)
-  const { loading: loadingPay, success: successPay } = orderPay
+  // 冒号后面是重命名
+  const orderPay = useSelector((state) => state.orderPay);
+  const { loading: loadingPay, success: successPay } = orderPay;
 
-  const orderDeliver = useSelector((state) => state.orderDeliver)
-  const { loading: loadingDeliver, success: successDeliver } = orderDeliver
+  const orderDeliver = useSelector((state) => state.orderDeliver);
+  const { loading: loadingDeliver, success: successDeliver } = orderDeliver;
 
-  const userLogin = useSelector((state) => state.userLogin)
-  const { userInfo } = userLogin
+  const userLogin = useSelector((state) => state.userLogin);
+  const { userInfo } = userLogin;
 
   if (!loading) {
     //   Calculate prices
     const addDecimals = (num) => {
-      return (Math.round(num * 100) / 100).toFixed(2)
-    }
+      return (Math.round(num * 100) / 100).toFixed(2);
+    };
 
     order.itemsPrice = addDecimals(
       order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
-    )
+    );
   }
 
+  // 1、如果没登录，那就登录
+  // 2、如果已经登录，那么加入paypal script
+  // 3、如果订单状态有变化 那么dispatch 更新state
   useEffect(() => {
     if (!userInfo) {
-      history.push('/login')
+      history.push('/login');
     }
 
     const addPayPalScript = async () => {
-      const { data: clientId } = await axios.get('/api/config/paypal')
-      const script = document.createElement('script')
-      script.type = 'text/javascript'
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`
-      script.async = true
+      // 就是存在.env里面的那个 需要加入一行代码 所以就准备这行代码 最后append到body里面
+      const { data: clientId } = await axios.get('/api/config/paypal');
+      const script = document.createElement('script');
+      script.type = 'text/javascript';
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`;
+      script.async = true;
       script.onload = () => {
-        setSdkReady(true)
-      }
-      document.body.appendChild(script)
-    }
+        setSdkReady(true);
+      };
+      document.body.appendChild(script);
+    };
 
+    // 没付钱的时候 也可以看到用户信息 所以!order
     if (!order || successPay || successDeliver || order._id !== orderId) {
-      dispatch({ type: ORDER_PAY_RESET })
-      dispatch({ type: ORDER_DELIVER_RESET })
-      dispatch(getOrderDetails(orderId))
+      // 不然会反复刷新？这里没有理解
+      dispatch({ type: ORDER_PAY_RESET });
+      dispatch({ type: ORDER_DELIVER_RESET });
+      dispatch(getOrderDetails(orderId));
     } else if (!order.isPaid) {
+      // paypal script 还不在的话
       if (!window.paypal) {
-        addPayPalScript()
+        // 加入script
+        addPayPalScript();
       } else {
-        setSdkReady(true)
+        setSdkReady(true);
       }
     }
-  }, [dispatch, orderId, successPay, successDeliver, order])
+  }, [dispatch, orderId, successPay, successDeliver, order]);
 
   const successPaymentHandler = (paymentResult) => {
-    console.log(paymentResult)
-    dispatch(payOrder(orderId, paymentResult))
-  }
+    console.log(paymentResult);
+    dispatch(payOrder(orderId, paymentResult));
+  };
 
   const deliverHandler = () => {
-    dispatch(deliverOrder(order))
-  }
+    dispatch(deliverOrder(order));
+  };
 
+  // 首先看是不是在loading，如果不是，那就再看是不是有error, 如果没有，那就正常
   return loading ? (
     <Loader />
   ) : error ? (
     <Message variant='danger'>{error}</Message>
   ) : (
     <>
+      {/* 标题 */}
       <h1>Order {order._id}</h1>
       <Row>
+        {/* 8 + 4 */}
         <Col md={8}>
+          {/* 发货信息，付款信息，商品信息 */}
           <ListGroup variant='flush'>
             <ListGroup.Item>
               <h2>Shipping</h2>
@@ -166,6 +179,7 @@ const OrderScreen = ({ match, history }) => {
           </ListGroup>
         </Col>
         <Col md={4}>
+          {/* 商品价格，运费，税费，总价 */}
           <Card>
             <ListGroup variant='flush'>
               <ListGroup.Item>
@@ -195,6 +209,7 @@ const OrderScreen = ({ match, history }) => {
                   <Col>${order.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
+              {/* 如果还没有付款 那么【缓冲图标||如果sdk还不好 也显示缓冲图标 否则显示paypal图标】*/}
               {!order.isPaid && (
                 <ListGroup.Item>
                   {loadingPay && <Loader />}
@@ -208,7 +223,9 @@ const OrderScreen = ({ match, history }) => {
                   )}
                 </ListGroup.Item>
               )}
+              {/* 如果正在缓冲 就出缓冲图标 */}
               {loadingDeliver && <Loader />}
+              {/* 如果用户登录为管理员 订单已经支付并且发货了 那就可以点击按钮 标注为已经发货 */}
               {userInfo &&
                 userInfo.isAdmin &&
                 order.isPaid &&
@@ -228,7 +245,7 @@ const OrderScreen = ({ match, history }) => {
         </Col>
       </Row>
     </>
-  )
-}
+  );
+};
 
-export default OrderScreen
+export default OrderScreen;

@@ -1,51 +1,53 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Form, Button } from 'react-bootstrap'
-import { useDispatch, useSelector } from 'react-redux'
-import Message from '../components/Message'
-import Loader from '../components/Loader'
-import FormContainer from '../components/FormContainer'
-import { getUserDetails, updateUser } from '../actions/userActions'
-import { USER_UPDATE_RESET } from '../constants/userConstants'
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Form, Button } from 'react-bootstrap';
+import { useDispatch, useSelector } from 'react-redux';
+import Message from '../components/Message';
+import Loader from '../components/Loader';
+import FormContainer from '../components/FormContainer';
+import { getUserDetails, updateUser } from '../actions/userActions';
+import { USER_UPDATE_RESET } from '../constants/userConstants';
 
 const UserEditScreen = ({ match, history }) => {
-  const userId = match.params.id
+  const userId = match.params.id;
 
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const userDetails = useSelector((state) => state.userDetails)
-  const { loading, error, user } = userDetails
+  const userDetails = useSelector((state) => state.userDetails);
+  const { loading, error, user } = userDetails;
 
-  const userUpdate = useSelector((state) => state.userUpdate)
+  // destructure + rename
+  const userUpdate = useSelector((state) => state.userUpdate);
   const {
     loading: loadingUpdate,
     error: errorUpdate,
     success: successUpdate,
-  } = userUpdate
+  } = userUpdate;
 
   useEffect(() => {
     if (successUpdate) {
-      dispatch({ type: USER_UPDATE_RESET })
-      history.push('/admin/userlist')
+      dispatch({ type: USER_UPDATE_RESET });
+      history.push('/admin/userlist');
     } else {
+      // 如果用户不存在 或者url上面的用户和state的用户不一样
       if (!user.name || user._id !== userId) {
-        dispatch(getUserDetails(userId))
+        dispatch(getUserDetails(userId));
       } else {
-        setName(user.name)
-        setEmail(user.email)
-        setIsAdmin(user.isAdmin)
+        setName(user.name);
+        setEmail(user.email);
+        setIsAdmin(user.isAdmin);
       }
     }
-  }, [dispatch, history, userId, user, successUpdate])
+  }, [dispatch, history, userId, user, successUpdate]);
 
   const submitHandler = (e) => {
-    e.preventDefault()
-    dispatch(updateUser({ _id: userId, name, email, isAdmin }))
-  }
+    e.preventDefault();
+    dispatch(updateUser({ _id: userId, name, email, isAdmin }));
+  };
 
   return (
     <>
@@ -54,6 +56,7 @@ const UserEditScreen = ({ match, history }) => {
       </Link>
       <FormContainer>
         <h1>Edit User</h1>
+        {/* 注意以下两项 是put method的检测 */}
         {loadingUpdate && <Loader />}
         {errorUpdate && <Message variant='danger'>{errorUpdate}</Message>}
         {loading ? (
@@ -98,7 +101,7 @@ const UserEditScreen = ({ match, history }) => {
         )}
       </FormContainer>
     </>
-  )
-}
+  );
+};
 
-export default UserEditScreen
+export default UserEditScreen;

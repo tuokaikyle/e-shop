@@ -58,7 +58,7 @@ const cartItemsFromStorage = localStorage.getItem('cartItems')
   ? JSON.parse(localStorage.getItem('cartItems'))
   : [];
 
-// 从localstorage获取用户信息 存 是在action中存的
+// 从localstorage获取用户信息 是在action中存的
 const userInfoFromStorage = localStorage.getItem('userInfo')
   ? JSON.parse(localStorage.getItem('userInfo'))
   : null;

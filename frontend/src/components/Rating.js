@@ -1,5 +1,6 @@
-import React from 'react'
+import React from 'react';
 
+// 了解
 const Rating = ({ value, text, color }) => {
   return (
     <div className='rating'>
@@ -65,11 +66,11 @@ const Rating = ({ value, text, color }) => {
       </span>
       <span>{text && text}</span>
     </div>
-  )
-}
+  );
+};
 
 Rating.defaultProps = {
   color: '#f8e825',
-}
+};
 
-export default Rating
+export default Rating;

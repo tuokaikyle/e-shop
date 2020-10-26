@@ -32,6 +32,7 @@ export const productListReducer = (state = { products: [] }, action) => {
     case PRODUCT_LIST_SUCCESS:
       return {
         loading: false,
+        // 后端controller返回了一个叫做products的东西
         products: action.payload.products,
         pages: action.payload.pages,
         page: action.payload.page,

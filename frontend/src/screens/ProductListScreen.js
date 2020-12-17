@@ -1,56 +1,60 @@
-import React, { useEffect } from 'react';
-import { LinkContainer } from 'react-router-bootstrap';
-import { Table, Button, Row, Col } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
-import Loader from '../components/Loader';
-import Paginate from '../components/Paginate';
+import React, { useEffect } from 'react'
+import { LinkContainer } from 'react-router-bootstrap'
+import { Table, Button, Row, Col } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import Message from '../components/Message'
+import Loader from '../components/Loader'
+import Paginate from '../components/Paginate'
 import {
   listProducts,
   deleteProduct,
   createProduct,
-} from '../actions/productActions';
-import { PRODUCT_CREATE_RESET } from '../constants/productConstants';
+} from '../actions/productActions'
+import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
 
 // 卖家创建的商品
+// 此处是 点击create，先在后端生成一个product, 然后再修改。
+// 优势是 一个edit screen，两个route 劣势是：只要点击了create 就实际上生成了一个
+// 可改进为：单独页面 创建product 然后提交后端 然后可以修改这个界面
+// 两个界面
 
 const ProductListScreen = ({ history, match }) => {
-  const pageNumber = match.params.pageNumber || 1;
+  const pageNumber = match.params.pageNumber || 1
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
-  const productList = useSelector((state) => state.productList);
-  const { loading, error, products, page, pages } = productList;
+  const productList = useSelector((state) => state.productList)
+  const { loading, error, products, page, pages } = productList
 
-  const productDelete = useSelector((state) => state.productDelete);
+  const productDelete = useSelector((state) => state.productDelete)
   const {
     loading: loadingDelete,
     error: errorDelete,
     success: successDelete,
-  } = productDelete;
+  } = productDelete
 
-  const productCreate = useSelector((state) => state.productCreate);
+  const productCreate = useSelector((state) => state.productCreate)
   const {
     loading: loadingCreate,
     error: errorCreate,
     success: successCreate,
     product: createdProduct,
-  } = productCreate;
+  } = productCreate
 
-  const userLogin = useSelector((state) => state.userLogin);
-  const { userInfo } = userLogin;
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin
 
   useEffect(() => {
-    dispatch({ type: PRODUCT_CREATE_RESET });
+    dispatch({ type: PRODUCT_CREATE_RESET })
 
     if (!userInfo || !userInfo.isAdmin) {
-      history.push('/login');
+      history.push('/login')
     }
 
     if (successCreate) {
-      history.push(`/admin/product/${createdProduct._id}/edit`);
+      history.push(`/admin/product/${createdProduct._id}/edit`)
     } else {
-      dispatch(listProducts('', pageNumber));
+      dispatch(listProducts('', pageNumber))
     }
   }, [
     dispatch,
@@ -60,17 +64,17 @@ const ProductListScreen = ({ history, match }) => {
     successCreate,
     createdProduct,
     pageNumber,
-  ]);
+  ])
 
   const deleteHandler = (id) => {
     if (window.confirm('Are you sure')) {
-      dispatch(deleteProduct(id));
+      dispatch(deleteProduct(id))
     }
-  };
+  }
 
   const createProductHandler = () => {
-    dispatch(createProduct());
-  };
+    dispatch(createProduct())
+  }
 
   return (
     <>
@@ -135,7 +139,7 @@ const ProductListScreen = ({ history, match }) => {
         </>
       )}
     </>
-  );
-};
+  )
+}
 
-export default ProductListScreen;
+export default ProductListScreen

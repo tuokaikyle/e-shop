@@ -19,9 +19,7 @@ import { listProducts } from '../actions/productActions'
 // 后端返回数据后，action中destructure出data, 装入payload
 // 再然后，根据action中第二个dispatch type, reducer 给出{products: 列表}
 // 这里的列表，通过action.payload.products拿到。因为，后端controller给出了一个叫products的列表
-// action destructure出来的data实际上就是这个叫做products的东西，它是一个列表
-// 所以，在state里面，有products: 列表
-// 本页面，products是一个列表
+// action destructure出来的data实际上是包含三个obj的大obj
 // 在return 中，products 遍历以下，将每个元素作为Props传给product组件。
 // 在组件中，把商品的属性点出来
 const HomeScreen = ({ match }) => {
@@ -33,8 +31,8 @@ const HomeScreen = ({ match }) => {
   const dispatch = useDispatch()
   const productList = useSelector((state) => state.productList)
   const { loading, error, products, page, pages } = productList
-  // console.log(loading)
-  // console.log(products)
+  // 这些内容可以是undefined
+  // console.log(loading, error, products, page, pages)
 
   useEffect(() => {
     dispatch(listProducts(keyword, pageNumber))

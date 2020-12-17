@@ -1,101 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { PayPalButton } from 'react-paypal-button-v2';
-import { Link } from 'react-router-dom';
-import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
-import Loader from '../components/Loader';
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
+import { PayPalButton } from 'react-paypal-button-v2'
+import { Link } from 'react-router-dom'
+import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import Message from '../components/Message'
+import Loader from '../components/Loader'
 import {
   getOrderDetails,
   payOrder,
   deliverOrder,
-} from '../actions/orderActions';
+  orderCreateReset,
+  deleteOrder,
+} from '../actions/orderActions'
 import {
   ORDER_PAY_RESET,
   ORDER_DELIVER_RESET,
-} from '../constants/orderConstants';
+} from '../constants/orderConstants'
+import { cartReset } from '../actions/cartActions'
 
 const OrderScreen = ({ match, history }) => {
-  const orderId = match.params.id;
+  const orderId = match.params.id
 
-  const [sdkReady, setSdkReady] = useState(false);
+  const [sdkReady, setSdkReady] = useState(false)
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
-  const orderDetails = useSelector((state) => state.orderDetails);
-  const { order, loading, error } = orderDetails;
+  const orderDetails = useSelector((state) => state.orderDetails)
+  const { order, loading, error } = orderDetails
 
   // 冒号后面是重命名
-  const orderPay = useSelector((state) => state.orderPay);
-  const { loading: loadingPay, success: successPay } = orderPay;
+  const orderPay = useSelector((state) => state.orderPay)
+  const { loading: loadingPay, success: successPay } = orderPay
 
-  const orderDeliver = useSelector((state) => state.orderDeliver);
-  const { loading: loadingDeliver, success: successDeliver } = orderDeliver;
+  const orderDeliver = useSelector((state) => state.orderDeliver)
+  const { loading: loadingDeliver, success: successDeliver } = orderDeliver
 
-  const userLogin = useSelector((state) => state.userLogin);
-  const { userInfo } = userLogin;
-
-  if (!loading) {
-    //   Calculate prices
-    const addDecimals = (num) => {
-      return (Math.round(num * 100) / 100).toFixed(2);
-    };
-
-    order.itemsPrice = addDecimals(
-      order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
-    );
-  }
+  const userLogin = useSelector((state) => state.userLogin)
+  const { userInfo } = userLogin
 
   // 1、如果没登录，那就登录
   // 2、如果已经登录，那么加入paypal script
   // 3、如果订单状态有变化 那么dispatch 更新state
   useEffect(() => {
     if (!userInfo) {
-      history.push('/login');
+      history.push('/login')
     }
 
     const addPayPalScript = async () => {
       // 就是存在.env里面的那个 需要加入一行代码 所以就准备这行代码 最后append到body里面
-      const { data: clientId } = await axios.get('/api/config/paypal');
-      const script = document.createElement('script');
-      script.type = 'text/javascript';
-      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`;
-      script.async = true;
+      const { data: clientId } = await axios.get('/api/config/paypal')
+      const script = document.createElement('script')
+      script.type = 'text/javascript'
+      script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}`
+      script.async = true
       script.onload = () => {
-        setSdkReady(true);
-      };
-      document.body.appendChild(script);
-    };
+        setSdkReady(true)
+      }
+      document.body.appendChild(script)
+    }
 
     // 没付钱的时候 也可以看到用户信息 所以!order
     if (!order || successPay || successDeliver || order._id !== orderId) {
       // 不然会反复刷新？这里没有理解
-      dispatch({ type: ORDER_PAY_RESET });
-      dispatch({ type: ORDER_DELIVER_RESET });
-      dispatch(getOrderDetails(orderId));
+      dispatch({ type: ORDER_PAY_RESET })
+      dispatch({ type: ORDER_DELIVER_RESET })
+      dispatch(getOrderDetails(orderId))
     } else if (!order.isPaid) {
       // paypal script 还不在的话
       if (!window.paypal) {
         // 加入script
-        addPayPalScript();
+        addPayPalScript()
       } else {
-        setSdkReady(true);
+        setSdkReady(true)
       }
     }
-  }, [dispatch, orderId, successPay, successDeliver, order]);
+  }, [dispatch, orderId, successPay, successDeliver, order])
 
   const successPaymentHandler = (paymentResult) => {
-    console.log(paymentResult);
-    dispatch(payOrder(orderId, paymentResult));
-  };
+    console.log(paymentResult)
+    if (paymentResult.status === 'COMPLETED') {
+      dispatch(payOrder(orderId, paymentResult))
+      // 下面这两行 解决新旧订单冲突的问题 注意 此时是付款后才执行
+      dispatch(cartReset())
+      dispatch(orderCreateReset())
+      // 下面这行 看看是否起到刷新界面 reset state的作用 答案是不能
+      history.push('/ordersbought')
+    }
+  }
 
   const deliverHandler = () => {
-    dispatch(deliverOrder(order));
-  };
+    dispatch(deliverOrder(order))
+  }
+
+  const deleteOrderHandler = (id) => {
+    dispatch(deleteOrder(id))
+    dispatch(orderCreateReset())
+    history.push('/')
+  }
+
+  if (order) {
+    //   Calculate prices
+    const addDecimals = (num) => {
+      return (Math.round(num * 100) / 100).toFixed(2)
+    }
+
+    order.itemsPrice = addDecimals(
+      order.orderItems.reduce((acc, item) => acc + item.price * item.qty, 0)
+    )
+  }
 
   // 首先看是不是在loading，如果不是，那就再看是不是有error, 如果没有，那就正常
-  return loading ? (
+  return !order ? (
     <Loader />
   ) : error ? (
     <Message variant='danger'>{error}</Message>
@@ -216,10 +232,19 @@ const OrderScreen = ({ match, history }) => {
                   {!sdkReady ? (
                     <Loader />
                   ) : (
-                    <PayPalButton
-                      amount={order.totalPrice}
-                      onSuccess={successPaymentHandler}
-                    />
+                    <div>
+                      <PayPalButton
+                        amount={order.totalPrice}
+                        onSuccess={successPaymentHandler}
+                      />
+                      <Button
+                        variant='danger'
+                        className='btn-sm'
+                        onClick={() => deleteOrderHandler(order._id)}
+                      >
+                        <i className='fas fa-trash'></i>
+                      </Button>
+                    </div>
                   )}
                 </ListGroup.Item>
               )}
@@ -245,7 +270,7 @@ const OrderScreen = ({ match, history }) => {
         </Col>
       </Row>
     </>
-  );
-};
+  )
+}
 
-export default OrderScreen;
+export default OrderScreen

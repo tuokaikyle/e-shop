@@ -24,6 +24,7 @@ import {
 } from '../constants/productConstants'
 import { logout } from './userActions'
 
+// homeScreen
 export const listProducts = (keyword = '', pageNumber = '') => async (
   dispatch
 ) => {
@@ -48,6 +49,7 @@ export const listProducts = (keyword = '', pageNumber = '') => async (
   }
 }
 
+// productscreen
 export const listProductDetails = (id) => async (dispatch) => {
   try {
     dispatch({ type: PRODUCT_DETAILS_REQUEST })
@@ -188,11 +190,16 @@ export const createProductReview = (productId, review) => async (
   dispatch,
   getState
 ) => {
+  // console.log(getState())
+  // 该函数调出所有state
   try {
     dispatch({
       type: PRODUCT_CREATE_REVIEW_REQUEST,
     })
 
+    // 此处为双重destructure
+    // getState数据为 userLogin:{userInfo:{}}
+    // 先要出userLogin的部分 在有userInfo的部分
     const {
       userLogin: { userInfo },
     } = getState()

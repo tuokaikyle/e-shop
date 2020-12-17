@@ -1,47 +1,51 @@
-import React, { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
-import CheckoutSteps from '../components/CheckoutSteps';
-import { createOrder } from '../actions/orderActions';
+import React, { useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import Message from '../components/Message'
+import CheckoutSteps from '../components/CheckoutSteps'
+import { createOrder } from '../actions/orderActions'
 
 // 全局讲解在56的末尾
 // payment第四步
 const PlaceOrderScreen = ({ history }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
   // 需要cart的state部分
-  const cart = useSelector((state) => state.cart);
+  const cart = useSelector((state) => state.cart)
+  const { paymentMethod } = cart
+  if (!paymentMethod) {
+    history.push('/payment')
+  }
 
   // 避免自动省略小数位数的0
   const addDecimals = (num) => {
-    return (Math.round(num * 100) / 100).toFixed(2);
-  };
+    return (Math.round(num * 100) / 100).toFixed(2)
+  }
 
-  // 商品价格
+  // 商品总价格
   cart.itemsPrice = addDecimals(
     cart.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0)
-  );
+  )
   // 满100免运费
-  cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100);
+  cart.shippingPrice = addDecimals(cart.itemsPrice > 100 ? 0 : 100)
   // 15%税
-  cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPrice).toFixed(2)));
+  cart.taxPrice = addDecimals(Number((0.15 * cart.itemsPrice).toFixed(2)))
   cart.totalPrice = (
     Number(cart.itemsPrice) +
     Number(cart.shippingPrice) +
     Number(cart.taxPrice)
-  ).toFixed(2);
+  ).toFixed(2)
 
-  const orderCreate = useSelector((state) => state.orderCreate);
-  const { order, success, error } = orderCreate;
+  const orderCreate = useSelector((state) => state.orderCreate)
+  const { order, success, error } = orderCreate
 
   useEffect(() => {
     if (success) {
-      history.push(`/order/${order._id}`);
+      history.push(`/order/${order._id}`)
     }
     // 意思是下一行如果有warning 那就不提示
     // eslint-disable-next-line
-  }, [history, success]);
+  }, [history, success])
 
   const placeOrderHandler = () => {
     dispatch(
@@ -53,9 +57,13 @@ const PlaceOrderScreen = ({ history }) => {
         shippingPrice: cart.shippingPrice,
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
+        // itemsPrice: cart.prices.itemsPrice,
+        // shippingPrice: cart.prices.shippingPrice,
+        // taxPrice: cart.prices.taxPrice,
+        // totalPrice: cart.prices.totalPrice,
       })
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -165,7 +173,7 @@ const PlaceOrderScreen = ({ history }) => {
         </Col>
       </Row>
     </>
-  );
-};
+  )
+}
 
-export default PlaceOrderScreen;
+export default PlaceOrderScreen

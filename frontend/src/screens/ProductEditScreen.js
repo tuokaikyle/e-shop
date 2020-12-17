@@ -1,85 +1,88 @@
-import axios from 'axios';
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Form, Button } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
-import Loader from '../components/Loader';
-import FormContainer from '../components/FormContainer';
-import { listProductDetails, updateProduct } from '../actions/productActions';
-import { PRODUCT_UPDATE_RESET } from '../constants/productConstants';
+import axios from 'axios'
+import React, { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { Form, Button } from 'react-bootstrap'
+import { useDispatch, useSelector } from 'react-redux'
+import Message from '../components/Message'
+import Loader from '../components/Loader'
+import FormContainer from '../components/FormContainer'
+import { listProductDetails, updateProduct } from '../actions/productActions'
+import { PRODUCT_UPDATE_RESET } from '../constants/productConstants'
 
 const ProductEditScreen = ({ match, history }) => {
-  const productId = match.params.id;
+  const productId = match.params.id
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState(0);
-  const [image, setImage] = useState('');
-  const [brand, setBrand] = useState('');
-  const [category, setCategory] = useState('');
-  const [countInStock, setCountInStock] = useState(0);
-  const [description, setDescription] = useState('');
-  const [uploading, setUploading] = useState(false);
+  const [name, setName] = useState('')
+  const [price, setPrice] = useState(0)
+  const [image, setImage] = useState('')
+  const [brand, setBrand] = useState('')
+  const [category, setCategory] = useState('')
+  const [countInStock, setCountInStock] = useState(0)
+  const [description, setDescription] = useState('')
+  const [uploading, setUploading] = useState(false)
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch()
 
-  const productDetails = useSelector((state) => state.productDetails);
-  const { loading, error, product } = productDetails;
+  const productDetails = useSelector((state) => state.productDetails)
+  const { loading, error, product } = productDetails
 
-  const productUpdate = useSelector((state) => state.productUpdate);
+  const productUpdate = useSelector((state) => state.productUpdate)
   const {
     loading: loadingUpdate,
     error: errorUpdate,
     success: successUpdate,
-  } = productUpdate;
+  } = productUpdate
 
   useEffect(() => {
+    // 首次：false，修改后成为true.
+    // 第二次来，则清空这个state，并且转到其它页面
     if (successUpdate) {
-      dispatch({ type: PRODUCT_UPDATE_RESET });
-      history.push('/admin/productlist');
+      dispatch({ type: PRODUCT_UPDATE_RESET })
+      history.push('/admin/productlist')
     } else {
+      // useSelector得到的可能是旧的信息？
       if (!product.name || product._id !== productId) {
-        dispatch(listProductDetails(productId));
+        dispatch(listProductDetails(productId))
       } else {
-        setName(product.name);
-        setPrice(product.price);
-        setImage(product.image);
-        setBrand(product.brand);
-        setCategory(product.category);
-        setCountInStock(product.countInStock);
-        setDescription(product.description);
+        setName(product.name)
+        setPrice(product.price)
+        setImage(product.image)
+        setBrand(product.brand)
+        setCategory(product.category)
+        setCountInStock(product.countInStock)
+        setDescription(product.description)
       }
     }
-  }, [dispatch, history, productId, product, successUpdate]);
+  }, [dispatch, history, productId, product, successUpdate])
 
   // 这里有e 才能获取图片文件
   const uploadFileHandler = async (e) => {
     // 获取第一个文件
-    const file = e.target.files[0];
-    const formData = new FormData();
-    formData.append('image', file);
+    const file = e.target.files[0]
+    const formData = new FormData()
+    formData.append('image', file)
     // 使得loader转起来
-    setUploading(true);
+    setUploading(true)
 
     try {
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-      };
+      }
 
-      const { data } = await axios.post('/api/upload', formData, config);
+      const { data } = await axios.post('/api/upload', formData, config)
 
-      setImage(data);
-      setUploading(false);
+      setImage(data)
+      setUploading(false)
     } catch (error) {
-      console.error(error);
-      setUploading(false);
+      console.error(error)
+      setUploading(false)
     }
-  };
+  }
 
   const submitHandler = (e) => {
-    e.preventDefault();
+    e.preventDefault()
     dispatch(
       updateProduct({
         _id: productId,
@@ -91,8 +94,8 @@ const ProductEditScreen = ({ match, history }) => {
         description,
         countInStock,
       })
-    );
-  };
+    )
+  }
 
   return (
     <>
@@ -194,7 +197,7 @@ const ProductEditScreen = ({ match, history }) => {
         )}
       </FormContainer>
     </>
-  );
-};
+  )
+}
 
-export default ProductEditScreen;
+export default ProductEditScreen

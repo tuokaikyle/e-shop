@@ -30,9 +30,10 @@ export const productListReducer = (state = { products: [] }, action) => {
     case PRODUCT_LIST_REQUEST:
       return { loading: true, products: [] }
     case PRODUCT_LIST_SUCCESS:
+      // console.log(action.payload)
       return {
         loading: false,
-        // 后端controller返回了一个叫做products的东西
+        // 后端controller返回了一个大obj, {products，page等等}
         products: action.payload.products,
         pages: action.payload.pages,
         page: action.payload.page,
@@ -50,6 +51,8 @@ export const productDetailsReducer = (
 ) => {
   switch (action.type) {
     case PRODUCT_DETAILS_REQUEST:
+      // 意思是 在现有的state中，Loading有更新
+      // 此时前一个的product detail仍然在
       return { ...state, loading: true }
     case PRODUCT_DETAILS_SUCCESS:
       return { loading: false, product: action.payload }

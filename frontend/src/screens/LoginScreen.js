@@ -8,8 +8,8 @@ import FormContainer from '../components/FormContainer';
 import { login } from '../actions/userActions';
 
 const LoginScreen = ({ location, history }) => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('test@test.com');
+  const [password, setPassword] = useState('test');
 
   // 以下三行做了一件事：用state中的loading, error, userInfo
   const dispatch = useDispatch();
@@ -32,6 +32,11 @@ const LoginScreen = ({ location, history }) => {
   const submitHandler = (e) => {
     e.preventDefault();
     dispatch(login(email, password));
+  };
+
+  const testAccount = () => {
+    setEmail('test@test.com');
+    setPassword('test');
   };
 
   return (
@@ -76,6 +81,13 @@ const LoginScreen = ({ location, history }) => {
           <Link to={redirect ? `/register?redirect=${redirect}` : '/register'}>
             Register
           </Link>
+        </Col>
+      </Row>
+      <Row className='py-3'>
+        <Col>
+          <Button variant='outline-secondary' onClick={() => testAccount()}>
+            Sign In With A Test Account
+          </Button>
         </Col>
       </Row>
     </FormContainer>

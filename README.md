@@ -1,8 +1,6 @@
-Bugs:
+### Bugs:
 
 未购买过该商品的用户不应该能够评价该商品
-
-使用
 
 update 和 orders 分开做 --- 搞定，添加了 orderSboughtScreen, 拆分
 
@@ -31,5 +29,6 @@ admin 可以更改用户的姓名和邮箱 这个不合逻辑
 
 改进 Logout 改为全局刷新并且跳转到登录页面
 
-deploy:
+### deploy:
+
 heroku git:remote -a e-shop-pty
